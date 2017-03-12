@@ -5,9 +5,9 @@ admin.initializeApp(functions.config().firebase);
 exports.notifyLikes = functions.database.ref('/post_likes/{postId}/{userId}').onWrite(event => {
 
   const snapshot = event.data;
-  if (snapshot.previous.val() !== null) {
-    return;
-  }
+  // if (snapshot.previous.val() !== null) {
+  //   return;
+  // }
 
   const postId = event.params.postId;
   const userId = event.params.userId;
@@ -16,9 +16,8 @@ exports.notifyLikes = functions.database.ref('/post_likes/{postId}/{userId}').on
     post = postSnapshot.val();
     const authorId = post.user_id;
     const payload = {
-      notification: {
-        title: "Vegetalia",
-        body: "Alguém curtiu sua publicação",
+      data: {
+        message: "Alguém curtiu sua publicação",
         // icon: snapshot.val().photoUrl || '/images/profile_placeholder.png',
         // click_action: `https://${functions.config().firebase.authDomain}`
       }
