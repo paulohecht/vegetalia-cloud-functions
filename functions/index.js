@@ -5,9 +5,11 @@ admin.initializeApp(functions.config().firebase);
 exports.notifyLikes = functions.database.ref('/post_likes/{postId}/{userId}').onWrite(event => {
 
   const snapshot = event.data;
-  // if (snapshot.previous.val() !== null) {
-  //   return;
-  // }
+
+  //Never notify if it's not the first time this user likes this post...
+  if (snapshot.previous.exists()) {
+    return;
+  }
 
   const postId = event.params.postId;
   const userId = event.params.userId;
@@ -17,17 +19,15 @@ exports.notifyLikes = functions.database.ref('/post_likes/{postId}/{userId}').on
     const authorId = post.user_id;
     const payload = {
       data: {
-        message: "Alguém curtiu sua publicação",
-        // icon: snapshot.val().photoUrl || '/images/profile_placeholder.png',
-        // click_action: `https://${functions.config().firebase.authDomain}`
+        type: "notification_like",
+        post: postId,
+        who: userId,
       }
     };
 
     admin.database().ref('tokens').child(authorId).once('value', function(tokenSnapshot) {
-      token = tokenSnapshot.val();
-      console.log("Token: ");
-      console.log(token);
-      admin.messaging().sendToDevice(token, payload);
+      admin.messaging().sendToDevice(tokenSnapshot.val(), payload);
+      console.log("Notification succesfully sent.")
     });
   });
 });
